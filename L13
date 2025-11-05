@@ -1,0 +1,31 @@
+#L13---------------------------------------------------------------------------------------------------------------------------------
+#有更動過程式碼
+
+from picamera2 import Picamera2, Preview
+import cv2
+import numpy as np
+
+ESC = 27
+picam2 = Picamera2()
+camera_config = picam2.create_preview_configuration(main={"size": (640, 480), "format":"YUV420"})
+picam2.configure(camera_config)
+picam2.start()
+
+WIDTH = 400
+HEIGHT = int(WIDTH * 480 / 640)
+fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+out = cv2.VideoWriter('video.mp4', fourcc, 30, (WIDTH, HEIGHT))
+
+while True:
+    frame = picam2.capture_array()
+    frame_bgr = cv2.cvtColor(frame, cv2.COLOR_YUV420p2BGR)
+    frame_bgr = cv2.resize(frame_bgr, (WIDTH, HEIGHT))
+    frame_bgr = cv2.flip(frame_bgr, 1)
+    out.write(frame_bgr)
+
+    cv2.imshow('frame', frame_bgr)
+    if cv2.waitKey(1) == ESC:
+        break
+picam2.stop()
+out.release()
+cv2.destroyAllWindows()
